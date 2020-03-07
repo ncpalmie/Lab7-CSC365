@@ -1,0 +1,8 @@
+.root {
+    font-size: 14px;
+    font-family: sans-serif;
+    background-color: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-family: sans-serif;
+    -fx-background-color: #ffffff;
+}

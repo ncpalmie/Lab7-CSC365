@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Button?>
+
+<VBox xmlns:fx="https://javafx.com/fxml" fx:controller="com.lab7.gui.controller.HelloWorldController">
+    <StackPane>
+        <Button fx:id="hello" text="Say Hello!" onAction="#pressButton"/>
+    </StackPane>
+</VBox>
