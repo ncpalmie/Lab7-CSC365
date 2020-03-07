@@ -4,7 +4,7 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 
-import com.lab7.lib.Test;
+import com.lab7.lib.Hello;
 
 public class HelloWorldController
 {
@@ -14,6 +14,6 @@ public class HelloWorldController
     @FXML
     public void pressButton(Event e)
     {
-        hello.setText(Test.getTest());
+        hello.setText(Hello.getTest());
     }
 }

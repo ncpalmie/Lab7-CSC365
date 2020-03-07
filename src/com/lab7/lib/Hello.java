@@ -1,6 +1,6 @@
 package com.lab7.lib;
 
-public class Test
+public class Hello
 {
     public static String getTest()
     {

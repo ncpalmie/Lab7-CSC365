@@ -6,8 +6,6 @@ import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import javafx.scene.control.Label;
-
 public class GUIApp extends Application
 {
     public static void main(String[] args)
