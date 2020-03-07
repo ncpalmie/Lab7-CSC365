@@ -79,4 +79,4 @@ local.properties
 .DS_Store
 
 .vscode
-.code-workspace
+*.code-workspace
