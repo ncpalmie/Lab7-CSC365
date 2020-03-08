@@ -6,7 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class GUIApp extends Application
+public class InnReservations extends Application
 {
     public static void main(String[] args)
     {
