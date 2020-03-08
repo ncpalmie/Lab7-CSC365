@@ -45,17 +45,6 @@ public class Room
         }
     }
 
-    public Room(String roomCode, String roomName, int beds, String bedType, int maxOcc, BigDecimal basePrice, String decor)
-    {
-        this.roomCode = roomCode;
-        this.roomName = roomName;
-        this.beds = beds;
-        this.bedType = bedType;
-        this.maxOcc = maxOcc;
-        this.basePrice = basePrice;
-        this.decor = decor;
-    }
-
     public String getCode()             { return roomCode; }
     public String getName()             { return roomName; }
     public int getBeds()                { return beds; }
