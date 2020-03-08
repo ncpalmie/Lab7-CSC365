@@ -2,8 +2,8 @@
 Lab 7 for Migler's 365 Winter 2020
 
 ## Team Members
-(Nathan Palmiero)[github.com/ncpalmie]
-(Garrett O'Keefe)[github.com/GMOkeefe]
+[Nathan Palmiero](github.com/ncpalmie)
+[Garrett O'Keefe](github.com/GMOkeefe)
 
 ## Compilation Instructions
 ### Requirements
