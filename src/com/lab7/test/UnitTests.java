@@ -53,7 +53,8 @@ public class UnitTests
         {
             Room rm = new Room("AOB", conn);
 
-            String expected = "Room[roomCode=AOB, " +
+            String expected =
+                "Room[roomCode=AOB, " +
                 "roomName=Abscond or bolster, " +
                 "beds=2, " +
                 "bedType=Queen, " +
@@ -62,6 +63,37 @@ public class UnitTests
                 "decor=traditional]";
 
             assertEquals(expected, rm.toString());
+        }
+        catch (SQLException e)
+        {
+            ExceptionReporter rp = new ExceptionReporter(e);
+
+            rp.report();
+            System.exit(-1);
+        }
+    }
+
+    @Test
+    public void testReservationGet()
+    {
+        try (Connection conn = DriverManager.getConnection(System.getenv("HP_JDBC_URL"),
+                                                            System.getenv("HP_JDBC_USER"),
+                                                            System.getenv("HP_JDBC_PW")))
+        {
+            Reservation rn = new Reservation(10105, conn);
+
+            String expected =
+                "Reservation[code=10105" +
+                ", room=HBB" +
+                ", checkIn=2020-05-23" +
+                ", checkOut=2020-05-25" +
+                ", rate=100.00" +
+                ", lastName=SELBIG" +
+                ", firstName=CONRAD" +
+                ", adults=1" +
+                ", kids=0]";
+
+            assertEquals(expected, rn.toString());
         }
         catch (SQLException e)
         {
