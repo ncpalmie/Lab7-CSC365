@@ -22,7 +22,7 @@ public class UnitTests
     {
         try
         {
-            Connection conn = DriverManager.getConnection("", "", "");
+            DriverManager.getConnection("", "", "");
         }
         catch (SQLException e)
         {
