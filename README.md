@@ -26,8 +26,8 @@ Lab 7 for Migler's 365 Winter 2020
 
 ```PATH_TO_FX```: path to your OpenJFX .jar files.
 
-```HP_JDBC_URL```: URL to MySQL database.
+```APP_JDBC_URL```: URL to MySQL database.
 
-```HP_JDBC_USER```: username to MySQL database.
+```APP_JDBC_USER```: username to MySQL database.
 
-```HP_JDBC_PW```: password to MySQL database.
+```APP_JDBC_PW```: password to MySQL database.

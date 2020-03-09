@@ -47,9 +47,9 @@ public class UnitTests
     @Test
     public void testRoomGet()
     {
-        try (Connection conn = DriverManager.getConnection(System.getenv("HP_JDBC_URL"),
-                                                            System.getenv("HP_JDBC_USER"),
-                                                            System.getenv("HP_JDBC_PW")))
+        try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                                                            System.getenv("APP_JDBC_USER"),
+                                                            System.getenv("APP_JDBC_PW")))
         {
             Room rm = Room.fromDatabase("AOB", conn);
 
@@ -76,9 +76,9 @@ public class UnitTests
     @Test
     public void testReservationGet()
     {
-        try (Connection conn = DriverManager.getConnection(System.getenv("HP_JDBC_URL"),
-                                                            System.getenv("HP_JDBC_USER"),
-                                                            System.getenv("HP_JDBC_PW")))
+        try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                                                            System.getenv("APP_JDBC_USER"),
+                                                            System.getenv("APP_JDBC_PW")))
         {
             Reservation rn = Reservation.fromDatabase(10105, conn);
 
