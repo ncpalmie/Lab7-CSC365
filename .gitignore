@@ -77,3 +77,6 @@ local.properties
 
 # OSX
 .DS_Store
+
+.vscode
+*.code-workspace
