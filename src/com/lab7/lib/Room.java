@@ -17,9 +17,10 @@ public class Room
     private BigDecimal basePrice;
     private String decor;
 
-    public Room(String roomCode, Connection conn)
+    public static Room fromDatabase(String roomCode, Connection conn)
     {
-        this.roomCode = roomCode;
+        Room newRoom = new Room();
+        newRoom.roomCode = roomCode;
 
         String query = "SELECT * FROM lab7_rooms WHERE RoomCode = \'" + roomCode + "\'";
 
@@ -29,12 +30,12 @@ public class Room
 
             rs.next();
 
-            this.roomName =     rs.getString(2);
-            this.beds =         rs.getInt(3);
-            this.bedType =      rs.getString(4);
-            this.maxOcc =       rs.getInt(5);
-            this.basePrice =    rs.getBigDecimal(6);
-            this.decor =        rs.getString(7);
+            newRoom.roomName =     rs.getString(2);
+            newRoom.beds =         rs.getInt(3);
+            newRoom.bedType =      rs.getString(4);
+            newRoom.maxOcc =       rs.getInt(5);
+            newRoom.basePrice =    rs.getBigDecimal(6);
+            newRoom.decor =        rs.getString(7);
         }
         catch (SQLException e)
         {
@@ -43,6 +44,8 @@ public class Room
             rp.report();
             System.exit(-1);
         }
+
+        return newRoom;
     }
 
     public String getCode()             { return roomCode; }

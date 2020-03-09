@@ -51,7 +51,7 @@ public class UnitTests
                                                             System.getenv("HP_JDBC_USER"),
                                                             System.getenv("HP_JDBC_PW")))
         {
-            Room rm = new Room("AOB", conn);
+            Room rm = Room.fromDatabase("AOB", conn);
 
             String expected =
                 "Room[roomCode=AOB, " +
@@ -80,7 +80,7 @@ public class UnitTests
                                                             System.getenv("HP_JDBC_USER"),
                                                             System.getenv("HP_JDBC_PW")))
         {
-            Reservation rn = new Reservation(10105, conn);
+            Reservation rn = Reservation.fromDatabase(10105, conn);
 
             String expected =
                 "Reservation[code=10105" +

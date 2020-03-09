@@ -22,9 +22,10 @@ public class Reservation
     private int adults;
     private int kids;
 
-    public Reservation(int code, Connection conn)
+    public static Reservation fromDatabase(int code, Connection conn)
     {
-        this.code = code;
+        Reservation newRes = new Reservation();
+        newRes.code = code;
 
         String query = "SELECT * FROM lab7_reservations WHERE CODE = " + code;
 
@@ -37,14 +38,14 @@ public class Reservation
             // TODO: Investigate a better solution
             Calendar pst = Calendar.getInstance(TimeZone.getTimeZone("PST"));
 
-            this.room =         rs.getString(2);
-            this.checkIn =      rs.getDate(3, pst);
-            this.checkOut =     rs.getDate(4, pst);
-            this.rate =         rs.getBigDecimal(5);
-            this.lastName =     rs.getString(6);
-            this.firstName =    rs.getString(7);
-            this.adults =       rs.getInt(8);
-            this.kids =         rs.getInt(9);
+            newRes.room =       rs.getString(2);
+            newRes.checkIn =    rs.getDate(3, pst);
+            newRes.checkOut =   rs.getDate(4, pst);
+            newRes.rate =       rs.getBigDecimal(5);
+            newRes.lastName =   rs.getString(6);
+            newRes.firstName =  rs.getString(7);
+            newRes.adults =     rs.getInt(8);
+            newRes.kids =       rs.getInt(9);
         }
         catch (SQLException e)
         {
@@ -53,6 +54,8 @@ public class Reservation
             rp.report();
             System.exit(-1);
         }
+
+        return newRes;
     }
 
     public int getCode()            { return code; }
