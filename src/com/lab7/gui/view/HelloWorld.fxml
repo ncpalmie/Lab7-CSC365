@@ -8,4 +8,7 @@
     <StackPane>
         <Button fx:id="hello" text="Say Hello!" onAction="#pressButton"/>
     </StackPane>
+    <StackPane>
+        <Label fx:id="label" text=""/>
+    </StackPane>
 </VBox>
