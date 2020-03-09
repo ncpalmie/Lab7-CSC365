@@ -11,6 +11,9 @@ public class ExceptionReporter
         exception = e;
     }
 
+    /**
+     * Reports SQL Exception details to ERR stream
+     */
     public void report()
     {
         System.err.println("Error: " + exception.getMessage());

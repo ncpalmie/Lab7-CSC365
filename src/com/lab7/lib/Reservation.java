@@ -10,6 +10,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Date;
 
+/**
+ * Reservation data wrapper class
+ */
 public class Reservation
 {
     private int code;
@@ -22,6 +25,14 @@ public class Reservation
     private int adults;
     private int kids;
 
+    /**
+     * Creates a Reservation instance retrieved from the database
+     * 
+     * @param code The identifying reservation code to retrieve
+     * @param conn The connection to the database to retrieve from
+     * 
+     * @return A Reservation instance that contains the data in the database
+     */
     public static Reservation fromDatabase(int code, Connection conn)
     {
         Reservation newRes = new Reservation();

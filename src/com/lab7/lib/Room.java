@@ -17,6 +17,14 @@ public class Room
     private BigDecimal basePrice;
     private String decor;
 
+    /**
+     * Creates a Room instance retrieved from the database
+     * 
+     * @param code The identifying room code to retrieve, pre-sanitized
+     * @param conn The connection to the database to retrieve from
+     * 
+     * @return A Room instance that contains the data in the database
+     */
     public static Room fromDatabase(String roomCode, Connection conn)
     {
         Room newRoom = new Room();
