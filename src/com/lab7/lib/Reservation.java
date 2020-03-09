@@ -40,10 +40,9 @@ public class Reservation
 
         String query = "SELECT * FROM lab7_reservations WHERE CODE = " + code;
 
-        try (Statement stmt = conn.createStatement())
+        try (Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query))
         {
-            ResultSet rs = stmt.executeQuery(query);
-
             rs.next();
 
             // TODO: Investigate a better solution

@@ -32,10 +32,9 @@ public class Room
 
         String query = "SELECT * FROM lab7_rooms WHERE RoomCode = \'" + roomCode + "\'";
 
-        try (Statement stmt = conn.createStatement())
+        try (Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query))
         {
-            ResultSet rs = stmt.executeQuery(query);
-
             rs.next();
 
             newRoom.roomName =     rs.getString(2);
