@@ -1,9 +1,10 @@
 package com.lab7.lib;
 
-import java.math.BigDecimal;
-import java.sql.Date;
+import java.sql.*;
 import java.util.List;
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Action handler for actions created by console/gui user inputs
@@ -59,9 +60,6 @@ public class ActionHandler {
             this.continueAction = true;
         }
 
-        //In case action with multiple prompts needs previous information
-        this.prevArgs = argsList;
-
         switch (this.currentAction) {
             case VIEW_ROOMS:
                 return this.getRooms();
@@ -89,12 +87,41 @@ public class ActionHandler {
 
     private String createReservation(List<String> argsList) {
         String retString = "";
+        String availableRoomQuery = "with TakenRooms as (SELECT DISTINCT Room FROM lab7_reservations WHERE " +
+                "CheckIn >= ? AND CheckIn < ? OR " +
+                "CheckOut > ? AND CheckOut <= ?) " +
+                "SELECT RoomCode FROM lab7_rooms as r WHERE r.roomCode NOT IN (SELECT Room FROM TakenRooms)";
 
         if (this.continueAction) {
             //For confirmation/other reservation selection
         }
         else {
             //For initial reservation request
+            try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                    System.getenv("APP_JDBC_USER"),
+                    System.getenv("APP_JDBC_PW")))
+            {
+                //Need to get open rooms to check if requested room is available
+                PreparedStatement availRooms = conn.prepareStatement(availableRoomQuery);
+
+                availRooms.setDate(1, java.sql.Date.valueOf(argsList.get(4))); //argsList 4 is checkIn date
+                availRooms.setDate(2, java.sql.Date.valueOf(argsList.get(5))); //argsList 5 is checkOut date
+                availRooms.setDate(3, java.sql.Date.valueOf(argsList.get(4)));
+                availRooms.setDate(4, java.sql.Date.valueOf(argsList.get(5)));
+
+                ResultSet rooms = availRooms.executeQuery();
+
+                while(rooms.next()) {
+                    retString += rooms.getString("roomcode") + "\n";
+                }
+            }
+            catch (SQLException e)
+            {
+                ExceptionReporter rp = new ExceptionReporter(e);
+
+                rp.report();
+                System.exit(-1);
+            }
         }
 
         //Default successful return
