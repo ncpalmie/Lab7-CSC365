@@ -4,8 +4,6 @@ import java.sql.*;
 import java.util.List;
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 /**
  * Action handler for actions created by console/gui user inputs
  */
