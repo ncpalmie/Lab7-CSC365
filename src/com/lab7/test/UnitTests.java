@@ -36,9 +36,9 @@ public class UnitTests
             System.err.flush();
             System.setErr(old);
             String expected = 
-                "Error: No suitable driver found for \r\n" +
-                "Error Code: 0\r\n" +
-                "SQLState: 08001\r\n";
+                "Error: No suitable driver found for " + System.lineSeparator() +
+                "Error Code: 0" + System.lineSeparator() +
+                "SQLState: 08001" + System.lineSeparator();
             
             assertEquals(expected, baos.toString());
         }
