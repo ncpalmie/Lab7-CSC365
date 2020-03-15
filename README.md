@@ -22,7 +22,7 @@ Lab 7 for Migler's 365 Winter 2020
 ```java --module-path %PATH_TO_FX% --add-modules javafx.controls,javafx.fxml com.lab7.gui.InnReservations```
 
 ### Environment Variables
-```CLASSPATH```: ensure that bin/classes, src/com/lab7/gui/view, src/com/lab7/gui/style here, as well as the directories of OpenJFX .jar files and MySQL Connector/J .jar file.
+```CLASSPATH```: ensure that bin/classes, src/com/lab7/gui, src/com/lab7/gui here, as well as the directories of OpenJFX .jar files and MySQL Connector/J .jar file.
 
 ```PATH_TO_FX```: path to your OpenJFX .jar files.
 
