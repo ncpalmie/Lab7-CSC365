@@ -26,11 +26,12 @@ public class InnReservations
             System.out.println("6: Exit reservation system");
             System.out.print("Enter the number of your desired action: ");
 
-            userInput = instream.nextInt();
+            userInput = Integer.parseInt(instream.nextLine());
+            System.out.println();
 
             if (userInput == 1) {
                 //Prompt for reservation information and fill argsList
-                ConsoleUtils.getReservationInformation(argsList);
+                ConsoleUtils.getReservationInformation(argsList, instream);
             } else if (userInput == 2) {
                 //Prompt for reservation code and changes to make to fill argsList
             } else if (userInput == 3) {
@@ -53,9 +54,15 @@ public class InnReservations
                     argsList = new ArrayList<String>();
 
                     //Display action specific prompts and fill argsList appropriately
+                    if (userInput == 1) {
+                        if (!Character.isDigit(outputString.charAt(0))) {
+                            ConsoleUtils.confirmReservation(argsList, instream);
+                        }
+                    }
 
-                    actHandler.handleAction(-1, argsList);
+                    outputString = actHandler.handleAction(-1, argsList);
                 }
+                System.out.println(outputString);
             }
         }
 

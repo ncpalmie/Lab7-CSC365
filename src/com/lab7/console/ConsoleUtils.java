@@ -5,13 +5,12 @@ import java.util.Scanner;
 import java.util.ArrayList;
 
 public class ConsoleUtils {
-    public static List<String> getReservationInformation(List<String> argsList) {
-        Scanner instream = new Scanner(System.in);
+    public static List<String> getReservationInformation(List<String> argsList, Scanner instream) {
 
         argsList.clear();
 
         //Order of entries based on order in spec for FR2 input
-        System.out.println("\nPlease enter the following information to complete\n" +
+        System.out.println("Please enter the following information to complete\n" +
                 "your reservation request. If you have no preference for an\n" +
                 "option, leave the entry blank and press enter:");
 
@@ -31,8 +30,17 @@ public class ConsoleUtils {
         argsList.add(instream.nextLine());
         System.out.print("Enter the number of adults staying: ");
         argsList.add(instream.nextLine());
+        System.out.println();
 
-        instream.close();
+        return argsList;
+    }
+
+    public static List<String> confirmReservation(List<String> argsList, Scanner instream) {
+        argsList.clear();
+
+        System.out.print("Enter \'y\' to confirm your reservation or \'n\' to cancel it: ");
+        argsList.add(instream.nextLine());
+        System.out.println();
 
         return argsList;
     }
