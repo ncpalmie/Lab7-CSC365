@@ -32,6 +32,8 @@ public class ConsoleUtils {
         System.out.print("Enter the number of adults staying: ");
         argsList.add(instream.nextLine());
 
+        instream.close();
+
         return argsList;
     }
 }

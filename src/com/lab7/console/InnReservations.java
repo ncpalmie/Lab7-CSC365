@@ -1,6 +1,5 @@
 package com.lab7.console;
 
-import com.lab7.lib.Hello;
 import com.lab7.console.ConsoleUtils;
 import com.lab7.lib.ActionHandler;
 import java.util.Scanner;
@@ -59,6 +58,8 @@ public class InnReservations
                 }
             }
         }
+
+        instream.close();
         System.out.println("Goodbye.");
     }
 }
