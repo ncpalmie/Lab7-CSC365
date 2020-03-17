@@ -1,8 +1,8 @@
 package com.lab7.console;
 
-import java.util.List;
-import java.util.Scanner;
-import java.util.ArrayList;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class ConsoleUtils {
     public static List<String> getReservationInformation(List<String> argsList, Scanner instream) {
@@ -43,5 +43,47 @@ public class ConsoleUtils {
         System.out.println();
 
         return argsList;
+    }
+
+    public static int getNumWeekdays(String startDateStr, String endDateStr) {
+        int retVal = 0;
+        SimpleDateFormat dFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar calendar = Calendar.getInstance();
+        Date startDate = null;
+        try {
+            startDate = dFormat.parse(startDateStr);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        calendar.setTime(startDate);
+        while (!dFormat.format(calendar.getTime()).equals(endDateStr)) {
+            if (!(calendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) &&
+                    !(calendar.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY)) {
+                retVal++;
+            }
+            calendar.add(Calendar.DATE, 1);
+        }
+
+        return retVal;
+    }
+
+    public static int getNumDays(String startDateStr, String endDateStr) {
+        int retVal = 0;
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat dFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date startDate = null;
+        try {
+            startDate = dFormat.parse(startDateStr);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        calendar.setTime(startDate);
+        while (!dFormat.format(calendar.getTime()).equals(endDateStr)) {
+            retVal++;
+            calendar.add(Calendar.DATE, 1);
+        }
+        return retVal;
     }
 }

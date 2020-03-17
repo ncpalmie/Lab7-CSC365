@@ -1,10 +1,11 @@
 package com.lab7.lib;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.*;
 import java.util.List;
 import java.util.ArrayList;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import com.lab7.console.ConsoleUtils;
 
 /**
  * Action handler for actions created by console/gui user inputs
@@ -148,19 +149,7 @@ public class ActionHandler {
                 else {
                     for (Room room : validRooms) {
                         if (desiredRoom != null && desiredRoom.getCode().equals(room.getCode())) {
-                            retString += "Your desired room is available in your specified time frame.\n";
-                            retString += "Here are the details of your reservation:\n";
-                            retString += "Reserved by: " + argsList.get(0) + ", " + argsList.get(1) + "\n";
-                            retString += "Booking room: " + desiredRoom.getName() + " (Code: " +
-                                    desiredRoom.getCode() + ") \n";
-                            retString += "Bed type: " + desiredRoom.getBedType() + "\n";
-                            retString += "Start date: " + argsList.get(4) + "\n";
-                            retString += "End date: " + argsList.get(5) + "\n";
-                            retString += "Number of adults: " + argsList.get(7) + "\n";
-                            retString += "Number of children: " + argsList.get(6) + "\n";
-                            // TODO: Display cost information as well
-                            this.actionResult = Results.PROMPT_AGAIN;
-                            return retString;
+                            return this.prepRoomConfirmation(desiredRoom, argsList);
                         }
                     }
                 }
@@ -177,6 +166,40 @@ public class ActionHandler {
         //Default successful return
         this.actionResult = Results.SUCCESS;
         return retString;
+    }
+
+    private String prepRoomConfirmation(Room room, List<String> argsList) {
+        String retString = "";
+        retString += "Your desired room is available in your specified time frame.\n";
+        retString += "Here are the details of your reservation:\n";
+        retString += "Reserved by: " + argsList.get(0) + ", " + argsList.get(1) + "\n";
+        retString += "Booking room: " + room.getName() + " (Code: " +
+                room.getCode() + ") \n";
+        retString += "Bed type: " + room.getBedType() + "\n";
+        retString += "Start date: " + argsList.get(4) + "\n";
+        retString += "End date: " + argsList.get(5) + "\n";
+        retString += "Number of adults: " + argsList.get(7) + "\n";
+        retString += "Number of children: " + argsList.get(6) + "\n";
+        retString += "Total cost of stay: $" +
+                String.valueOf(getRoomCost(room, argsList.get(4), argsList.get(5))) + "\n";
+        this.actionResult = Results.PROMPT_AGAIN;
+        return retString;
+    }
+
+    private float getRoomCost(Room room, String startDateStr, String endDateStr) {
+        float totalCost = 0;
+        float roomCost = room.getBasePrice()
+                .setScale(2, RoundingMode.DOWN).floatValue();
+        float weekendCost = roomCost * 1.1f;
+        int numDays = ConsoleUtils.getNumDays(startDateStr, endDateStr);
+        int numWeekdays = ConsoleUtils.getNumWeekdays(startDateStr, endDateStr);
+        int numWeekendDays = numDays - numWeekdays;
+
+        totalCost += numWeekdays * roomCost;
+        totalCost += numWeekendDays * weekendCost;
+        totalCost += totalCost * 0.18f;
+
+        return totalCost;
     }
 
     private String alterReservation(List<String> argsList) {

@@ -30,7 +30,6 @@ public class InnReservations
             System.out.println();
 
             if (userInput == 1) {
-                //Prompt for reservation information and fill argsList
                 ConsoleUtils.getReservationInformation(argsList, instream);
             } else if (userInput == 2) {
                 //Prompt for reservation code and changes to make to fill argsList
@@ -45,25 +44,20 @@ public class InnReservations
 
             outputString = actHandler.handleAction(userInput, argsList);
 
-            if (actHandler.getActionResult() == ActionHandler.Results.SUCCESS ||
-                    actHandler.getActionResult() == ActionHandler.Results.FAIL) {
+            while (actHandler.getActionResult() == ActionHandler.Results.PROMPT_AGAIN) {
                 System.out.println(outputString);
-            } else {
-                while (actHandler.getActionResult() == ActionHandler.Results.PROMPT_AGAIN) {
-                    System.out.println(outputString);
-                    argsList = new ArrayList<String>();
+                argsList = new ArrayList<String>();
 
-                    //Display action specific prompts and fill argsList appropriately
-                    if (userInput == 1) {
-                        if (!Character.isDigit(outputString.charAt(0))) {
-                            ConsoleUtils.confirmReservation(argsList, instream);
-                        }
+                //Display action specific prompts and fill argsList appropriately
+                if (userInput == 1) {
+                    if (!Character.isDigit(outputString.charAt(0))) {
+                        ConsoleUtils.confirmReservation(argsList, instream);
                     }
-
-                    outputString = actHandler.handleAction(-1, argsList);
                 }
-                System.out.println(outputString);
+
+                outputString = actHandler.handleAction(-1, argsList);
             }
+            System.out.println(outputString);
         }
 
         instream.close();
