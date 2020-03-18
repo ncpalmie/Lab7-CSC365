@@ -37,6 +37,7 @@ public class InnReservations
                 //Prompt for reservation code
             } else if (userInput == 4) {
                 //Prompt for reservation information and fill argsList
+                ConsoleUtils.getReservationSearch(argsList, instream);
             }
             else if (userInput == 6) {
                 break;

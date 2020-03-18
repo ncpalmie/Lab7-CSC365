@@ -8,6 +8,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.TimeZone;
+
 import com.lab7.console.ConsoleUtils;
 
 /**
@@ -530,6 +532,71 @@ public class ActionHandler {
 
     private String viewReservation(List<String> argsList) {
         String retString = "";
+        String resQuery;
+        resQuery = "SELECT Code, Room, CheckIn, CheckOut, Rate, LastName, FirstName, " +
+                "roomName FROM lab7_reservations AS l7re INNER JOIN lab7_rooms as l7ro ON " +
+                "l7re.room = l7ro.roomCode WHERE firstName LIKE ? AND lastName LIKE ? " +
+                "AND checkIn LIKE ? AND checkOut LIKE ? AND room LIKE ? AND code LIKE ?";
+        SimpleDateFormat dFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar pst = Calendar.getInstance(TimeZone.getTimeZone("PST"));
+
+        //Check empty values
+        if (argsList.get(0).isBlank())
+            argsList.set(0, "%");
+        if (argsList.get(1).isBlank())
+            argsList.set(1, "%");
+        if (argsList.get(2).isBlank())
+            argsList.set(2, "%");
+        if (argsList.get(3).isBlank())
+            argsList.set(3, "%");
+        if (argsList.get(4).isBlank())
+            argsList.set(4, "%");
+        if (argsList.get(5).isBlank())
+            argsList.set(5, "%");
+
+        try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                System.getenv("APP_JDBC_USER"),
+                System.getenv("APP_JDBC_PW")))
+        {
+            PreparedStatement resStmt = conn.prepareStatement(resQuery);
+
+            resStmt.setString(1, argsList.get(0));
+            resStmt.setString(2, argsList.get(1));
+            if (argsList.get(2).equals("%"))
+                resStmt.setString(3, argsList.get(2));
+            else
+                resStmt.setDate(3, java.sql.Date.valueOf(argsList.get(2)));
+            if (argsList.get(3).equals("%"))
+                resStmt.setString(4, argsList.get(3));
+            else
+                resStmt.setDate(4, java.sql.Date.valueOf(argsList.get(3)));
+            resStmt.setString(5, argsList.get(4));
+            resStmt.setString(6, argsList.get(5));
+
+            ResultSet rs = resStmt.executeQuery();
+
+            if (!rs.next()) {
+                retString += "No matching rooms were found.\n";
+                this.actionResult = Results.SUCCESS;
+                return retString;
+            }
+            retString += "These are the matching reservations in the system output in the following CSV format\n";
+            retString += "Reservation Code, Room Code, Room Name, Check In Date, Check Out Date, Rate, First Name, Last Name:\n\n";
+            rs.beforeFirst();
+            while (rs.next()) {
+                retString += rs.getString("Code") + ", " + rs.getString("Room") + ", "
+                        + rs.getString("roomName") + ", ";
+                retString += dFormat.format(rs.getDate("checkIn", pst)) + ", ";
+                retString += dFormat.format(rs.getDate("checkOut", pst)) + ", ";
+                retString += rs.getBigDecimal("rate") + ", ";
+                retString += rs.getString("firstName") + ", " + rs.getString("lastName") + "\n";
+            }
+        }
+        catch (SQLException e) {
+            ExceptionReporter rp = new ExceptionReporter(e);
+            rp.report();
+            System.exit(-1);
+        }
 
         //Default successful return
         this.actionResult = Results.SUCCESS;
@@ -538,6 +605,7 @@ public class ActionHandler {
 
     private String viewRevenue() {
         String retString = "";
+
 
         //Default successful return
         this.actionResult = Results.SUCCESS;

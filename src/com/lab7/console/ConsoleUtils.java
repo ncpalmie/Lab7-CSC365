@@ -62,6 +62,30 @@ public class ConsoleUtils {
         return argsList;
     }
 
+    public static List<String> getReservationSearch(List<String> argsList, Scanner instream) {
+        argsList.clear();
+
+        System.out.println("Fill out the following prompt to search for reservations. If you\n" +
+                "have no specifier for a category, leave it blank to represent \"Any\".\n" +
+                "Wildcards are permitted for non-date entries with the % character.");
+
+        System.out.print("Enter a first name: ");
+        argsList.add(instream.nextLine());
+        System.out.print("Enter a last name: ");
+        argsList.add(instream.nextLine());
+        System.out.print("Enter a start date: ");
+        argsList.add(instream.nextLine());
+        System.out.print("Enter an end date: ");
+        argsList.add(instream.nextLine());
+        System.out.print("Enter a room code: ");
+        argsList.add(instream.nextLine());
+        System.out.print("Enter a reservation code: ");
+        argsList.add(instream.nextLine());
+        System.out.println();
+
+        return argsList;
+    }
+
     public static List<String> confirmReservation(List<String> argsList, Scanner instream) {
         argsList.clear();
 
