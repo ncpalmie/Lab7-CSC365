@@ -16,11 +16,12 @@ public class InnReservations extends Application
     @Override
     public void start(Stage primaryStage) throws Exception
     {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/HelloWorld.fxml"));
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(getClass().getResource("/view/Home.fxml"));
         VBox content = loader.<VBox>load();
 
         Scene scene = new Scene(content, 640, 480);
-        scene.getStylesheets().add("/style/HelloWorld.css");
+        scene.getStylesheets().add("/style/Scene.css");
         primaryStage.setScene(scene);
         primaryStage.show();
     }

@@ -5,6 +5,13 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import java.math.BigDecimal;
 
+
+import java.sql.ResultSet;
+import java.sql.PreparedStatement;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Date;
+
 /**
  * Reservation data wrapper class
  */
@@ -33,28 +40,39 @@ public class Reservation
         Reservation newRes = new Reservation();
         newRes.code = code;
 
-        String query = "SELECT * FROM lab7_reservations WHERE CODE = " + code;
+        final String query = "SELECT * FROM lab7_reservations WHERE CODE = ?";
 
-        try (Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(query))
+        try (PreparedStatement stmt = conn.prepareStatement(query))
         {
             if (!rs.next()) {
                 return null;
             }
             rs.beforeFirst();
             rs.next();
+            stmt.setInt(1, code);
+            try (ResultSet rs = stmt.executeQuery())
+            {        
+                rs.next();
 
-            // TODO: Investigate a better solution
-            Calendar pst = Calendar.getInstance(TimeZone.getTimeZone("PST"));
+                // TODO: Investigate a better solution
+                Calendar pst = Calendar.getInstance(TimeZone.getTimeZone("PST"));
 
-            newRes.room =       rs.getString(2);
-            newRes.checkIn =    rs.getDate(3, pst);
-            newRes.checkOut =   rs.getDate(4, pst);
-            newRes.rate =       rs.getBigDecimal(5);
-            newRes.lastName =   rs.getString(6);
-            newRes.firstName =  rs.getString(7);
-            newRes.adults =     rs.getInt(8);
-            newRes.kids =       rs.getInt(9);
+                newRes.room =       rs.getString(2);
+                newRes.checkIn =    rs.getDate(3, pst);
+                newRes.checkOut =   rs.getDate(4, pst);
+                newRes.rate =       rs.getBigDecimal(5);
+                newRes.lastName =   rs.getString(6);
+                newRes.firstName =  rs.getString(7);
+                newRes.adults =     rs.getInt(8);
+                newRes.kids =       rs.getInt(9);
+            }
+            catch (SQLException e)
+            {
+                ExceptionReporter rp = new ExceptionReporter(e);
+
+                rp.report();
+                System.exit(-1);
+            }
         }
         catch (SQLException e)
         {

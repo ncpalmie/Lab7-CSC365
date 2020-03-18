@@ -516,17 +516,65 @@ public class ActionHandler {
     }
 
     private String cancelReservation(List<String> argsList) {
-        String retString = "temp";
+        String retString = "";
+        String deleteReservation = "DELETE FROM lab7_reservations WHERE CODE = ?";
 
         if (this.continueAction) {
             //For cancellation confirmation
+            try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                System.getenv("APP_JDBC_USER"),
+                System.getenv("APP_JDBC_PW")))
+            {
+                PreparedStatement delRes = conn.prepareStatement(deleteReservation);
+
+                delRes.setInt(1, java.lang.Integer.valueOf(argsList.get(0)));
+
+                delRes.executeUpdate();
+            }
+            catch (SQLException e)
+            {
+                ExceptionReporter rp = new ExceptionReporter(e);
+
+                rp.report();
+                System.exit(-1);
+            }
+            this.actionResult = Results.SUCCESS;
         }
         else {
             //For initial cancellation request
+            try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                    System.getenv("APP_JDBC_USER"),
+                    System.getenv("APP_JDBC_PW")))
+            {
+                conn.setAutoCommit(false);
+                PreparedStatement delRes = conn.prepareStatement(deleteReservation);
+
+                delRes.setInt(1, java.lang.Integer.valueOf(argsList.get(0)));
+
+                if (delRes.executeUpdate() > 0)
+                {
+                    this.actionResult = Results.PROMPT_AGAIN;
+    
+                    retString = "This will permanently delete your reservation. Are you sure?";
+                }
+                else
+                {
+                    this.actionResult = Results.FAIL;
+
+                    retString = "No reservation was found with that code";
+                }
+                conn.rollback();
+            }
+            catch (SQLException e)
+            {
+                ExceptionReporter rp = new ExceptionReporter(e);
+
+                rp.report();
+                System.exit(-1);
+            }
         }
 
         //Default successful return
-        this.actionResult = Results.SUCCESS;
         return retString;
     }
 

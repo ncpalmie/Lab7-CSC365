@@ -3,7 +3,7 @@ package com.lab7.lib;
 import java.math.BigDecimal;
 
 import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.PreparedStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -30,19 +30,29 @@ public class Room
         Room newRoom = new Room();
         newRoom.roomCode = roomCode;
 
-        String query = "SELECT * FROM lab7_rooms WHERE RoomCode = \'" + roomCode + "\'";
+        final String query = "SELECT * FROM lab7_rooms WHERE RoomCode = ?";
 
-        try (Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(query))
+        try (PreparedStatement stmt = conn.prepareStatement(query))
         {
-            rs.next();
+            stmt.setString(1, roomCode);
+            try (ResultSet rs = stmt.executeQuery())
+            {
+                rs.next();
 
-            newRoom.roomName =     rs.getString(2);
-            newRoom.beds =         rs.getInt(3);
-            newRoom.bedType =      rs.getString(4);
-            newRoom.maxOcc =       rs.getInt(5);
-            newRoom.basePrice =    rs.getBigDecimal(6);
-            newRoom.decor =        rs.getString(7);
+                newRoom.roomName =     rs.getString(2);
+                newRoom.beds =         rs.getInt(3);
+                newRoom.bedType =      rs.getString(4);
+                newRoom.maxOcc =       rs.getInt(5);
+                newRoom.basePrice =    rs.getBigDecimal(6);
+                newRoom.decor =        rs.getString(7);
+            }
+            catch (SQLException e)
+            {
+                ExceptionReporter rp = new ExceptionReporter(e);
+
+                rp.report();
+                System.exit(-1);
+            }
         }
         catch (SQLException e)
         {

@@ -94,6 +94,21 @@ public class ConsoleUtils {
         return argsList;
     }
 
+
+    public static List<String> getReservationCode(ArrayList<String> argsList)
+    {
+        Scanner instream = new Scanner(System.in);
+
+        argsList.clear();
+
+        System.out.print("\nPlease enter the reservation code of the reservation to be deleted: ");
+        argsList.add(instream.nextLine());
+
+        instream.close();
+
+        return argsList;
+	  }
+
     public static List<String> confirmReservation(List<String> argsList, Scanner instream) {
         argsList.clear();
 
