@@ -1,14 +1,9 @@
 package com.lab7.lib;
 
+import java.sql.*;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.math.BigDecimal;
-
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Date;
 
 /**
  * Reservation data wrapper class
@@ -43,6 +38,10 @@ public class Reservation
         try (Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query))
         {
+            if (!rs.next()) {
+                return null;
+            }
+            rs.beforeFirst();
             rs.next();
 
             // TODO: Investigate a better solution
@@ -77,6 +76,29 @@ public class Reservation
     public String getFirstName()    { return firstName; }
     public int getAdults()          { return adults; }
     public int getKids()            { return kids; }
+
+    public void setRoomCode(String rmCode)  {this.room = rmCode;}
+    public void setCheckIn(Date date)       {this.checkIn = date;}
+    public void setCheckOut(Date date)      {this.checkOut = date;}
+
+    public static int getUniqueCode(Connection conn) {
+        int code = 0;
+        String codeQuery;
+        codeQuery = "SELECT Code FROM lab7_reservations WHERE code >= ALL (SELECT Code FROM lab7_reservations)";
+
+        try(PreparedStatement codeStmt = conn.prepareStatement(codeQuery);) {
+            ResultSet codeRs = codeStmt.executeQuery();
+            codeRs.next();
+            code = codeRs.getInt("Code");
+            code++;
+        }
+        catch (SQLException e) {
+            ExceptionReporter rp = new ExceptionReporter(e);
+            rp.report();
+            System.exit(-1);
+        }
+        return code;
+    }
 
     @Override
     public String toString()
