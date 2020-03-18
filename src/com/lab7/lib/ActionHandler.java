@@ -91,6 +91,65 @@ public class ActionHandler {
 
     private String getRooms() {
         String retString = "";
+        String popQuery = 
+        "SELECT RoomCode, RoomName, Beds, bedType, maxOcc, basePrice, decor, " +
+            "ROUND(SUM( " +
+                "DATEDIFF(LEAST(CheckOut, CURDATE()), LEAST(CheckIn, DATE_ADD(CURDATE(), INTERVAL -180 DAY))) " +
+            ") / 180, 2) AS Popularity, " +
+            "(SELECT IF(CURDATE() < MIN(CheckIn), CURDATE(), MIN(CheckOut)) " +
+            "FROM lab7_reservations " +
+            "WHERE Room = Roomcode " +
+                "AND (CURDATE() BETWEEN CheckIn AND CheckOut " +
+                "OR CheckIn > CURDATE()) " +
+            "GROUP BY Room) AS NextAvailable, " +
+            "(SELECT DATEDIFF(MAX(CheckOut), MAX(CheckIn)) " +
+            "FROM lab7_reservations " +
+            "WHERE CheckOut < CURDATE() " +
+                "AND Room = RoomCode " +
+            "GROUP BY Room) AS LengthLastStay, " +
+            "(SELECT MAX(CheckOut) " +
+            "FROM lab7_reservations " +
+            "WHERE CheckOut < CURDATE() " +
+                "AND Room = RoomCode " +
+            "GROUP BY Room) AS LastCheckOut " +
+        "FROM lab7_rooms " +
+            "JOIN lab7_reservations " +
+                "ON RoomCode = Room " +
+        "WHERE CheckOut > DATE_ADD(CURDATE(), INTERVAL -180 DAY) " +
+            "AND CheckIn < CURDATE() " +
+        "GROUP BY RoomCode " +
+        "ORDER BY Popularity DESC";
+        
+        try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                                                            System.getenv("APP_JDBC_USER"),
+                                                            System.getenv("APP_JDBC_PW"));
+            PreparedStatement stmt = conn.prepareStatement(popQuery);
+            ResultSet rs = stmt.executeQuery())
+        {
+            if (!rs.next())
+            {
+                this.actionResult = Results.FAIL;
+                return null;
+            }
+            rs.beforeFirst();
+
+            retString = "Room Code | Room Name                      | Beds   | Bed Type | Max Occupancy | Base Price | Decor                | " +
+                        "Popularity | Next Available Check-In Date | Length of Last Stay | Last Check Out\n";
+
+            while (rs.next())
+            {
+                retString += String.format("%-9s | %-30s | %-6d | %-8s | %-13d | %-10.2f | %-20s | %-10.2f | %-28s | %-19d | %-14s\n", 
+                    rs.getString(1), rs.getString(2), rs.getInt(3), rs.getString(4), rs.getInt(5), rs.getBigDecimal(6),
+                    rs.getString(7), rs.getBigDecimal(8), rs.getDate(9).toString(), rs.getInt(10), rs.getDate(11).toString());
+            }
+        }
+        catch (SQLException e)
+        {
+            ExceptionReporter rp = new ExceptionReporter(e);
+
+            rp.report();
+            System.exit(-1);
+        }
 
         //Default successful return
         this.actionResult = Results.SUCCESS;
@@ -100,7 +159,6 @@ public class ActionHandler {
     private String createReservation(List<String> argsList) {
         int totalOcc;
         String retString = "";
-        String availableRoomQuery;
         SimpleDateFormat dFormat = new SimpleDateFormat("yyyy-MM-dd");
         List<Room> validRooms = new ArrayList<Room>();
         Room desiredRoom = null;
