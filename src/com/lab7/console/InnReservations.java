@@ -45,7 +45,7 @@ public class InnReservations
                 ConsoleUtils.getAlterationInformation(argsList, instream);
             } else if (userInput == 3) {
                 //Prompt for reservation code
-                ConsoleUtils.getReservationCode(argsList);
+                ConsoleUtils.getReservationCode(argsList, instream);
             } else if (userInput == 4) {
                 //Prompt for reservation information and fill argsList
                 ConsoleUtils.getReservationSearch(argsList, instream);
@@ -71,6 +71,9 @@ public class InnReservations
                 }
                 else if (userInput == 2) {
                     ConsoleUtils.confirmReservation(argsList, instream);
+                }
+                else if (userInput == 3) {
+                    ConsoleUtils.confirmCancellation(argsList, instream);
                 }
 
                 outputString = actHandler.handleAction(-1, argsList);

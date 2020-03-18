@@ -95,16 +95,12 @@ public class ConsoleUtils {
     }
 
 
-    public static List<String> getReservationCode(ArrayList<String> argsList)
+    public static List<String> getReservationCode(ArrayList<String> argsList, Scanner instream)
     {
-        Scanner instream = new Scanner(System.in);
-
         argsList.clear();
 
-        System.out.print("\nPlease enter the reservation code of the reservation to be deleted: ");
+        System.out.print("Please enter the reservation code of the reservation to be deleted: ");
         argsList.add(instream.nextLine());
-
-        instream.close();
 
         return argsList;
 	  }
@@ -113,6 +109,16 @@ public class ConsoleUtils {
         argsList.clear();
 
         System.out.print("Enter \'y\' to confirm your new reservation or \'n\' to cancel it: ");
+        argsList.add(instream.nextLine());
+        System.out.println();
+
+        return argsList;
+    }
+
+    public static List<String> confirmCancellation(List<String> argsList, Scanner instream) {
+        argsList.clear();
+
+        System.out.print("Enter \'y\' to confirm your cancellation or \'n\' to cancel it: ");
         argsList.add(instream.nextLine());
         System.out.println();
 
