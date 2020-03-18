@@ -6,3 +6,8 @@
     -fx-font-family: sans-serif;
     -fx-background-color: #ffffff;
 }
+
+.button {
+    -fx-alignment: BASELINE_LEFT;
+    -fx-pref-width: 180px;
+}
