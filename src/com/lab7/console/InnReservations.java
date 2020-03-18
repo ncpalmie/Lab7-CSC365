@@ -28,9 +28,7 @@ public class InnReservations
             userInput = Integer.parseInt(instream.nextLine());
             System.out.println();
             
-            if (userInput == 0) {
-                // Display rooms & rates
-            } else if (userInput == 1) {
+            if (userInput == 1) {
                 ConsoleUtils.getReservationInformation(argsList, instream);
             } else if (userInput == 2) {
                 ConsoleUtils.getAlterationInformation(argsList, instream);
