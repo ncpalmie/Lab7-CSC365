@@ -44,14 +44,13 @@ public class Reservation
 
         try (PreparedStatement stmt = conn.prepareStatement(query))
         {
-            if (!rs.next()) {
-                return null;
-            }
-            rs.beforeFirst();
-            rs.next();
             stmt.setInt(1, code);
             try (ResultSet rs = stmt.executeQuery())
-            {        
+            {   
+                if (!rs.next()) {
+                    return null;
+                }
+                rs.beforeFirst();
                 rs.next();
 
                 // TODO: Investigate a better solution
