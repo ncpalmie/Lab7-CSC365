@@ -43,7 +43,7 @@ public class Reservation
         try (PreparedStatement stmt = conn.prepareStatement(query))
         {
             stmt.setInt(1, code);
-            try (ResultSet rs = stmt.executeQuery(query))
+            try (ResultSet rs = stmt.executeQuery())
             {        
                 rs.next();
 
