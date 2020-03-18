@@ -18,7 +18,9 @@ public class ActionHandler {
     Results actionResult;
     List<String> lastArgs = new ArrayList<String>();
     List<String> prevVals = new ArrayList<String>();
+    List<String> newVals = new ArrayList<String>();
     boolean continueAction = false;
+    int lastChoice = -1;
 
 
     public enum Action {
@@ -62,6 +64,7 @@ public class ActionHandler {
             this.continueAction = false;
             this.prevVals.clear();
             this.lastArgs.clear();
+            this.newVals.clear();
         }
         else {
             this.continueAction = true;
@@ -97,6 +100,7 @@ public class ActionHandler {
         int totalOcc;
         String retString = "";
         String availableRoomQuery;
+        String makeResStmt;
         SimpleDateFormat dFormat = new SimpleDateFormat("yyyy-MM-dd");
         List<Room> validRooms = new ArrayList<Room>();
         Room desiredRoom = null;
@@ -106,6 +110,8 @@ public class ActionHandler {
                 "CheckOut > ? AND CheckOut <= ?) " +
                 "SELECT RoomCode FROM lab7_rooms as r WHERE r.roomCode NOT IN (SELECT Room FROM TakenRooms) AND " +
                 "r.maxOcc >= ?";
+        makeResStmt = "INSERT INTO lab7_reservations (code, room, checkin, checkout, rate, lastname, firstname," +
+                " adults, kids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         if (this.continueAction) {
             //For confirmation/other reservation selection
@@ -116,6 +122,7 @@ public class ActionHandler {
                 {
                     desiredRoom = Room.fromDatabase(prevVals.get(
                             Integer.valueOf(argsList.get(0)) - 1), conn);
+                    this.lastChoice = Integer.valueOf(argsList.get(0));
                     return this.prepRoomConfirmation(desiredRoom, lastArgs);
                 }
                 catch (SQLException e)
@@ -127,6 +134,39 @@ public class ActionHandler {
                 }
             }
             else if (argsList.get(0).toLowerCase().equals("y")) {
+                try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                        System.getenv("APP_JDBC_USER"),
+                        System.getenv("APP_JDBC_PW")))
+                {
+                    float dailyRate = Float.valueOf(lastArgs.get(8)) / ConsoleUtils.getNumDays(
+                            lastArgs.get(4), lastArgs.get(5));
+                    PreparedStatement newRes = conn.prepareStatement(makeResStmt);
+
+                    if (newVals.size() > 0) {
+                        lastArgs.set(2, newVals.get((this.lastChoice - 1) * 3));
+                        lastArgs.set(4, newVals.get((this.lastChoice - 1) * 3 + 1));
+                        lastArgs.set(5, newVals.get((this.lastChoice - 1) * 3 + 2));
+                    }
+
+                    newRes.setInt(1, Reservation.getUniqueCode());
+                    newRes.setString(2, lastArgs.get(2)); //RoomCode
+                    newRes.setDate(3, java.sql.Date.valueOf(lastArgs.get(4))); //CheckIn
+                    newRes.setDate(4, java.sql.Date.valueOf(lastArgs.get(5))); //CheckOut
+                    newRes.setBigDecimal(5, new BigDecimal(dailyRate));
+                    newRes.setString(6, lastArgs.get(1)); // Last Name
+                    newRes.setString(7, lastArgs.get(0)); // First Name
+                    newRes.setInt(8, Integer.valueOf(lastArgs.get(7))); //Num adults
+                    newRes.setInt(9, Integer.valueOf(lastArgs.get(6))); //Num Kids
+
+                    newRes.executeUpdate();
+                }
+                catch (SQLException e)
+                {
+                    ExceptionReporter rp = new ExceptionReporter(e);
+
+                    rp.report();
+                    System.exit(-1);
+                }
                 retString += "Your reservation has been confirmed.\n";
             }
             else {
@@ -184,12 +224,14 @@ public class ActionHandler {
                                 dFormat.format(res.getCheckIn()) + " to " +
                                 dFormat.format(res.getCheckOut()) + "\n";
                         prevVals.add(res.getRoomCode());
+                        newVals.add(res.getRoomCode());
+                        newVals.add(dFormat.format(res.getCheckIn()));
+                        newVals.add(dFormat.format(res.getCheckOut()));
                         roomNdx++;
                     }
                     this.actionResult = Results.PROMPT_AGAIN;
-                    for (String arg : argsList) {
+                    for (String arg : argsList)
                         lastArgs.add(arg);
-                    }
                     return retString;
                 }
                 else {
@@ -306,6 +348,7 @@ public class ActionHandler {
 
     private String prepRoomConfirmation(Room room, List<String> argsList) {
         String retString = "";
+        String roomCost = String.valueOf(getRoomCost(room, argsList.get(4), argsList.get(5)));
         retString += "Your desired room is available in your specified time frame.\n";
         retString += "Here are the details of your reservation:\n";
         retString += "Reserved by: " + argsList.get(0) + ", " + argsList.get(1) + "\n";
@@ -316,9 +359,13 @@ public class ActionHandler {
         retString += "End date: " + argsList.get(5) + "\n";
         retString += "Number of adults: " + argsList.get(7) + "\n";
         retString += "Number of children: " + argsList.get(6) + "\n";
-        retString += "Total cost of stay: $" +
-                String.valueOf(getRoomCost(room, argsList.get(4), argsList.get(5))) + "\n";
+        retString += "Total cost of stay: $" + roomCost + "\n";
         this.actionResult = Results.PROMPT_AGAIN;
+        if (this.lastArgs != argsList) {
+            for (String arg : argsList)
+                this.lastArgs.add(arg);
+        }
+        this.lastArgs.add(roomCost);
         return retString;
     }
 

@@ -15,6 +15,7 @@ import java.sql.Date;
  */
 public class Reservation
 {
+    public static int uniqueCode = 100000;
     private int code;
     private String room;
     private Date checkIn;
@@ -81,6 +82,11 @@ public class Reservation
     public void setRoomCode(String rmCode)  {this.room = rmCode;}
     public void setCheckIn(Date date)       {this.checkIn = date;}
     public void setCheckOut(Date date)      {this.checkOut = date;}
+
+    public static int getUniqueCode() {
+        Reservation.uniqueCode++;
+        return Reservation.uniqueCode;
+    }
 
     @Override
     public String toString()
