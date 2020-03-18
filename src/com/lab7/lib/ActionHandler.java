@@ -3,6 +3,9 @@ package com.lab7.lib;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 import java.util.ArrayList;
 import com.lab7.console.ConsoleUtils;
@@ -13,7 +16,8 @@ import com.lab7.console.ConsoleUtils;
 public class ActionHandler {
     Action currentAction;
     Results actionResult;
-    List<String> prevArgs;
+    List<String> lastArgs = new ArrayList<String>();
+    List<String> prevVals = new ArrayList<String>();
     boolean continueAction = false;
 
 
@@ -56,6 +60,8 @@ public class ActionHandler {
         if (actionNumber != -1) {
             this.currentAction = Action.values()[actionNumber];
             this.continueAction = false;
+            this.prevVals.clear();
+            this.lastArgs.clear();
         }
         else {
             this.continueAction = true;
@@ -91,6 +97,7 @@ public class ActionHandler {
         int totalOcc;
         String retString = "";
         String availableRoomQuery;
+        SimpleDateFormat dFormat = new SimpleDateFormat("yyyy-MM-dd");
         List<Room> validRooms = new ArrayList<Room>();
         Room desiredRoom = null;
 
@@ -102,7 +109,24 @@ public class ActionHandler {
 
         if (this.continueAction) {
             //For confirmation/other reservation selection
-            if (argsList.get(0).toLowerCase().equals("y")) {
+            if (Character.isDigit(argsList.get(0).charAt(0))) {
+                try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                        System.getenv("APP_JDBC_USER"),
+                        System.getenv("APP_JDBC_PW")))
+                {
+                    desiredRoom = Room.fromDatabase(prevVals.get(
+                            Integer.valueOf(argsList.get(0)) - 1), conn);
+                    return this.prepRoomConfirmation(desiredRoom, lastArgs);
+                }
+                catch (SQLException e)
+                {
+                    ExceptionReporter rp = new ExceptionReporter(e);
+
+                    rp.report();
+                    System.exit(-1);
+                }
+            }
+            else if (argsList.get(0).toLowerCase().equals("y")) {
                 retString += "Your reservation has been confirmed.\n";
             }
             else {
@@ -115,10 +139,20 @@ public class ActionHandler {
                     System.getenv("APP_JDBC_USER"),
                     System.getenv("APP_JDBC_PW")))
             {
-                totalOcc = Integer.parseInt(argsList.get(6)) +                        //argsList 6 and 7 are occupants
+                totalOcc = Integer.parseInt(argsList.get(6)) +                    //argsList 6 and 7 are occupants
                     Integer.parseInt(argsList.get(7));
 
-                if (argsList.get(2).length() > 0) {
+                //Check if total occupancy exceeds max room size
+                if (totalOcc >= 5) {
+                    retString += "We're sorry, but there are no rooms currently available that can fit\n" +
+                            "your entire party. You'll need to make multiple reservations and split\n" +
+                            "your party among multiple rooms.\n";
+                    this.actionResult = Results.FAIL;
+                    return retString;
+                }
+
+                //Check if specific room was requested
+                if (roomCodeExists(argsList.get(2), conn) && argsList.get(2).length() > 0) {
                     desiredRoom = Room.fromDatabase(argsList.get(2), conn);
                 }
 
@@ -138,20 +172,45 @@ public class ActionHandler {
                     validRooms.add(Room.fromDatabase(rooms.getString("RoomCode"), conn));
                 }
 
-                //FR2 requirement that requests with occupancies greater than max room size have custom fail message
                 if (validRooms.size() == 0) {
-                    retString += "We're sorry, but there are no rooms currently available that can fit\n" +
-                            "your entire party. You'll need to make multiple reservations and split\n" +
-                            "your party among multiple rooms.\n";
-                    this.actionResult = Results.FAIL;
+                    int roomNdx = 1;
+                    retString += "Unfortunately no available rooms match your search description. \n";
+                    retString += "Here is a list of rooms available for the length of time you'd like \n";
+                    retString += "to book, but on future dates when they are available.\n";
+                    List<Reservation> suggestedRooms = getFiveSuggestions(argsList.get(4),
+                            argsList.get(5), totalOcc, conn);
+                    for (Reservation res : suggestedRooms) {
+                        retString += roomNdx + ": " + res.getRoomCode() + " from " +
+                                dFormat.format(res.getCheckIn()) + " to " +
+                                dFormat.format(res.getCheckOut()) + "\n";
+                        prevVals.add(res.getRoomCode());
+                        roomNdx++;
+                    }
+                    this.actionResult = Results.PROMPT_AGAIN;
+                    for (String arg : argsList) {
+                        lastArgs.add(arg);
+                    }
                     return retString;
                 }
                 else {
+                    int roomNdx = 1;
                     for (Room room : validRooms) {
                         if (desiredRoom != null && desiredRoom.getCode().equals(room.getCode())) {
                             return this.prepRoomConfirmation(desiredRoom, argsList);
                         }
+                        if (roomNdx == 1) {
+                            retString += "Please select from one of the available rooms that \n";
+                            retString += "match your desired search terms:\n";
+                        }
+                        retString += roomNdx + ": " + room.getCode() + "\n";
+                        prevVals.add(room.getCode());
+                        roomNdx++;
                     }
+                    this.actionResult = Results.PROMPT_AGAIN;
+                    for (String arg : argsList) {
+                        lastArgs.add(arg);
+                    }
+                    return retString;
                 }
             }
             catch (SQLException e)
@@ -166,6 +225,83 @@ public class ActionHandler {
         //Default successful return
         this.actionResult = Results.SUCCESS;
         return retString;
+    }
+
+    private boolean roomCodeExists(String roomCode, Connection conn) {
+        String queryString = "SELECT RoomCode FROM lab7_rooms";
+        List<String> roomCodes = new ArrayList<String>();
+        try (PreparedStatement allRooms = conn.prepareStatement(queryString);
+             ResultSet rs = allRooms.executeQuery()) {
+            while (rs.next()) {
+                roomCodes.add(rs.getString("RoomCode"));
+            }
+        }
+        catch (SQLException e)
+        {
+            ExceptionReporter rp = new ExceptionReporter(e);
+
+            rp.report();
+            System.exit(-1);
+        }
+        for (String rmCode : roomCodes) {
+            if (rmCode.equals(roomCode))
+                return true;
+        }
+        return false;
+    }
+
+    private List<Reservation> getFiveSuggestions(String startDateStr, String endDateStr, int totalOcc,
+                                                 Connection conn) {
+        String availableRoomQuery = "with TakenRooms as (SELECT DISTINCT Room FROM lab7_reservations WHERE " +
+                "CheckIn >= ? AND CheckIn < ? OR " +
+                "CheckOut > ? AND CheckOut <= ?) " +
+                "SELECT RoomCode FROM lab7_rooms as r WHERE r.roomCode NOT IN (SELECT Room FROM TakenRooms) AND " +
+                "r.maxOcc >= ?";
+        int stayLength = ConsoleUtils.getNumDays(startDateStr, endDateStr);
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat dFormat = new SimpleDateFormat("yyyy-MM-dd");
+        List<Reservation> fiveRes = new ArrayList<Reservation>();
+        Date startDate = null;
+        Date endDate = null;
+
+        try {
+            startDate = new java.sql.Date(dFormat.parse(startDateStr).getTime());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        while (fiveRes.size() < 5) {
+            calendar.setTime(startDate);
+            calendar.add(Calendar.DATE, stayLength);
+            endDate = new java.sql.Date(calendar.getTime().getTime());
+
+            try (PreparedStatement availRooms = conn.prepareStatement(availableRoomQuery)) {
+                availRooms.setDate(1, startDate);
+                availRooms.setDate(2, endDate);
+                availRooms.setDate(3, startDate);
+                availRooms.setDate(4, endDate);
+                availRooms.setInt(5, totalOcc);
+
+                ResultSet rooms = availRooms.executeQuery();
+
+                while (rooms.next() && fiveRes.size() < 5) {
+                    Reservation newRes = new Reservation();
+                    newRes.setRoomCode(rooms.getString("RoomCode"));
+                    newRes.setCheckIn(startDate);
+                    newRes.setCheckOut(endDate);
+                    fiveRes.add(newRes);
+                }
+            } catch (SQLException e) {
+                ExceptionReporter rp = new ExceptionReporter(e);
+                rp.report();
+                System.exit(-1);
+            }
+            calendar.setTime(startDate);
+            calendar.add(Calendar.DATE, 1);
+            startDate = new java.sql.Date(calendar.getTime().getTime());
+        }
+
+        return fiveRes;
     }
 
     private String prepRoomConfirmation(Room room, List<String> argsList) {
@@ -250,5 +386,5 @@ public class ActionHandler {
 
     public Action getCurrentAction()         { return currentAction; }
     public Results getActionResult()         { return actionResult; }
-    public List<String> getPrevArgs()        { return prevArgs;}
+    public List<String> getLastArgs()        { return lastArgs;}
 }

@@ -78,6 +78,10 @@ public class Reservation
     public int getAdults()          { return adults; }
     public int getKids()            { return kids; }
 
+    public void setRoomCode(String rmCode)  {this.room = rmCode;}
+    public void setCheckIn(Date date)       {this.checkIn = date;}
+    public void setCheckOut(Date date)      {this.checkOut = date;}
+
     @Override
     public String toString()
     {

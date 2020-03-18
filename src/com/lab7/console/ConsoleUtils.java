@@ -45,6 +45,17 @@ public class ConsoleUtils {
         return argsList;
     }
 
+    public static List<String> getOptionChoice(List<String> argsList, Scanner instream) {
+        argsList.clear();
+
+        System.out.print("Enter the number of the room you'd like to book, or enter\n" +
+                "\'c\' to cancel the request and return to main menu: ");
+        argsList.add(instream.nextLine());
+        System.out.println();
+
+        return argsList;
+    }
+
     public static int getNumWeekdays(String startDateStr, String endDateStr) {
         int retVal = 0;
         SimpleDateFormat dFormat = new SimpleDateFormat("yyyy-MM-dd");

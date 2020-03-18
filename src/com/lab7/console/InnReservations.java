@@ -50,8 +50,11 @@ public class InnReservations
 
                 //Display action specific prompts and fill argsList appropriately
                 if (userInput == 1) {
-                    if (!Character.isDigit(outputString.charAt(0))) {
+                    if (outputString.charAt(0) == 'Y') {
                         ConsoleUtils.confirmReservation(argsList, instream);
+                    }
+                    else if (outputString.charAt(0) == 'P' || outputString.charAt(0) == 'U') {
+                        ConsoleUtils.getOptionChoice(argsList, instream);
                     }
                 }
 
