@@ -15,6 +15,8 @@ Lab 7 for Migler's 365 Winter 2020
 ### For Console
 ```javac -d bin/classes src/com/lab7/console/*.java src/com/lab7/lib/*.java```
 
+```cd bin/classes```
+
 ```java com.lab7.console.InnReservations```
 
 ### For GUI
