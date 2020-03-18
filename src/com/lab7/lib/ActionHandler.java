@@ -95,23 +95,13 @@ public class ActionHandler {
         return retString;
     }
 
-    // TODO: Refactor into more digestible functions
     private String createReservation(List<String> argsList) {
         int totalOcc;
         String retString = "";
         String availableRoomQuery;
-        String makeResStmt;
         SimpleDateFormat dFormat = new SimpleDateFormat("yyyy-MM-dd");
         List<Room> validRooms = new ArrayList<Room>();
         Room desiredRoom = null;
-
-        availableRoomQuery = "with TakenRooms as (SELECT DISTINCT Room FROM lab7_reservations WHERE " +
-                "CheckIn >= ? AND CheckIn < ? OR " +
-                "CheckOut > ? AND CheckOut <= ?) " +
-                "SELECT RoomCode FROM lab7_rooms as r WHERE r.roomCode NOT IN (SELECT Room FROM TakenRooms) AND " +
-                "r.maxOcc >= ?";
-        makeResStmt = "INSERT INTO lab7_reservations (code, room, checkin, checkout, rate, lastname, firstname," +
-                " adults, kids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         if (this.continueAction) {
             //For confirmation/other reservation selection
@@ -134,39 +124,7 @@ public class ActionHandler {
                 }
             }
             else if (argsList.get(0).toLowerCase().equals("y")) {
-                try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
-                        System.getenv("APP_JDBC_USER"),
-                        System.getenv("APP_JDBC_PW")))
-                {
-                    float dailyRate = Float.valueOf(lastArgs.get(8)) / ConsoleUtils.getNumDays(
-                            lastArgs.get(4), lastArgs.get(5));
-                    PreparedStatement newRes = conn.prepareStatement(makeResStmt);
-
-                    if (newVals.size() > 0) {
-                        lastArgs.set(2, newVals.get((this.lastChoice - 1) * 3));
-                        lastArgs.set(4, newVals.get((this.lastChoice - 1) * 3 + 1));
-                        lastArgs.set(5, newVals.get((this.lastChoice - 1) * 3 + 2));
-                    }
-
-                    newRes.setInt(1, Reservation.getUniqueCode());
-                    newRes.setString(2, lastArgs.get(2)); //RoomCode
-                    newRes.setDate(3, java.sql.Date.valueOf(lastArgs.get(4))); //CheckIn
-                    newRes.setDate(4, java.sql.Date.valueOf(lastArgs.get(5))); //CheckOut
-                    newRes.setBigDecimal(5, new BigDecimal(dailyRate));
-                    newRes.setString(6, lastArgs.get(1)); // Last Name
-                    newRes.setString(7, lastArgs.get(0)); // First Name
-                    newRes.setInt(8, Integer.valueOf(lastArgs.get(7))); //Num adults
-                    newRes.setInt(9, Integer.valueOf(lastArgs.get(6))); //Num Kids
-
-                    newRes.executeUpdate();
-                }
-                catch (SQLException e)
-                {
-                    ExceptionReporter rp = new ExceptionReporter(e);
-
-                    rp.report();
-                    System.exit(-1);
-                }
+                addReservation();
                 retString += "Your reservation has been confirmed.\n";
             }
             else {
@@ -179,7 +137,7 @@ public class ActionHandler {
                     System.getenv("APP_JDBC_USER"),
                     System.getenv("APP_JDBC_PW")))
             {
-                totalOcc = Integer.parseInt(argsList.get(6)) +                    //argsList 6 and 7 are occupants
+                totalOcc = Integer.parseInt(argsList.get(6)) +   //argsList 6 and 7 are occupants
                     Integer.parseInt(argsList.get(7));
 
                 //Check if total occupancy exceeds max room size
@@ -197,20 +155,7 @@ public class ActionHandler {
                 }
 
                 //Need to get valid rooms to check if requested room is available
-                PreparedStatement availRooms = conn.prepareStatement(availableRoomQuery);
-
-
-                availRooms.setDate(1, java.sql.Date.valueOf(argsList.get(4))); //argsList 4 is checkIn date
-                availRooms.setDate(2, java.sql.Date.valueOf(argsList.get(5))); //argsList 5 is checkOut date
-                availRooms.setDate(3, java.sql.Date.valueOf(argsList.get(4)));
-                availRooms.setDate(4, java.sql.Date.valueOf(argsList.get(5)));
-                availRooms.setInt(5, totalOcc);
-
-                ResultSet rooms = availRooms.executeQuery();
-
-                while(rooms.next()) {
-                    validRooms.add(Room.fromDatabase(rooms.getString("RoomCode"), conn));
-                }
+                validRooms = this.getValidRooms(validRooms, argsList, totalOcc, conn);
 
                 if (validRooms.size() == 0) {
                     int roomNdx = 1;
@@ -249,9 +194,8 @@ public class ActionHandler {
                         roomNdx++;
                     }
                     this.actionResult = Results.PROMPT_AGAIN;
-                    for (String arg : argsList) {
+                    for (String arg : argsList)
                         lastArgs.add(arg);
-                    }
                     return retString;
                 }
             }
@@ -267,6 +211,77 @@ public class ActionHandler {
         //Default successful return
         this.actionResult = Results.SUCCESS;
         return retString;
+    }
+
+    private List<Room> getValidRooms(List<Room> validRooms, List<String> argsList, int totalOcc,
+                                     Connection conn) {
+        String availableRoomQuery;
+        availableRoomQuery = "with TakenRooms as (SELECT DISTINCT Room FROM lab7_reservations WHERE " +
+                "CheckIn >= ? AND CheckIn < ? OR " +
+                "CheckOut > ? AND CheckOut <= ?) " +
+                "SELECT RoomCode FROM lab7_rooms as r WHERE r.roomCode NOT IN (SELECT Room FROM TakenRooms) AND " +
+                "r.maxOcc >= ?";
+        try(PreparedStatement availRooms = conn.prepareStatement(availableRoomQuery);) {
+
+
+            availRooms.setDate(1, java.sql.Date.valueOf(argsList.get(4))); //argsList 4 is checkIn date
+            availRooms.setDate(2, java.sql.Date.valueOf(argsList.get(5))); //argsList 5 is checkOut date
+            availRooms.setDate(3, java.sql.Date.valueOf(argsList.get(4)));
+            availRooms.setDate(4, java.sql.Date.valueOf(argsList.get(5)));
+            availRooms.setInt(5, totalOcc);
+
+            ResultSet rooms = availRooms.executeQuery();
+
+            while (rooms.next()) {
+                validRooms.add(Room.fromDatabase(rooms.getString("RoomCode"), conn));
+            }
+        }
+        catch (SQLException e)
+        {
+            ExceptionReporter rp = new ExceptionReporter(e);
+            rp.report();
+            System.exit(-1);
+        }
+        return validRooms;
+    }
+
+
+    private void addReservation() {
+        String makeResStmt;
+        makeResStmt = "INSERT INTO lab7_reservations (code, room, checkin, checkout, rate, lastname, firstname," +
+                " adults, kids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                System.getenv("APP_JDBC_USER"),
+                System.getenv("APP_JDBC_PW")))
+        {
+            float dailyRate = Float.valueOf(lastArgs.get(8)) / ConsoleUtils.getNumDays(
+                    lastArgs.get(4), lastArgs.get(5));
+            PreparedStatement newRes = conn.prepareStatement(makeResStmt);
+
+            if (newVals.size() > 0) {
+                lastArgs.set(2, newVals.get((this.lastChoice - 1) * 3));
+                lastArgs.set(4, newVals.get((this.lastChoice - 1) * 3 + 1));
+                lastArgs.set(5, newVals.get((this.lastChoice - 1) * 3 + 2));
+            }
+
+            newRes.setInt(1, Reservation.getUniqueCode());
+            newRes.setString(2, lastArgs.get(2)); //RoomCode
+            newRes.setDate(3, java.sql.Date.valueOf(lastArgs.get(4))); //CheckIn
+            newRes.setDate(4, java.sql.Date.valueOf(lastArgs.get(5))); //CheckOut
+            newRes.setBigDecimal(5, new BigDecimal(dailyRate));
+            newRes.setString(6, lastArgs.get(1)); // Last Name
+            newRes.setString(7, lastArgs.get(0)); // First Name
+            newRes.setInt(8, Integer.valueOf(lastArgs.get(7))); //Num adults
+            newRes.setInt(9, Integer.valueOf(lastArgs.get(6))); //Num Kids
+
+            newRes.executeUpdate();
+        }
+        catch (SQLException e)
+        {
+            ExceptionReporter rp = new ExceptionReporter(e);
+            rp.report();
+            System.exit(-1);
+        }
     }
 
     private boolean roomCodeExists(String roomCode, Connection conn) {
@@ -387,12 +402,110 @@ public class ActionHandler {
 
     private String alterReservation(List<String> argsList) {
         String retString = "";
+        boolean dateChange = false;
+        Reservation refRes;
+        SimpleDateFormat dFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String availableRoomQuery;
+        String alterStmt;
+        alterStmt = "UPDATE lab7_reservations SET firstName = ?, lastName = ?, checkIn = ? "+
+                ", checkOut = ?, kids = ?, adults = ? WHERE code = ?";
+        availableRoomQuery = "with TakenRooms as (SELECT DISTINCT Room FROM lab7_reservations WHERE " +
+                "CheckIn >= ? AND CheckIn < ? OR " +
+                "CheckOut > ? AND CheckOut <= ?) " +
+                "SELECT RoomCode FROM lab7_rooms as r WHERE r.roomCode NOT IN (SELECT Room FROM TakenRooms) AND " +
+                "r.roomCode = ?";
 
         if (this.continueAction) {
             //For confirmation of alteration
+            if (argsList.get(0).toLowerCase().equals("y")) {
+                try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                        System.getenv("APP_JDBC_USER"),
+                        System.getenv("APP_JDBC_PW")))
+                {
+                    PreparedStatement alteration = conn.prepareStatement(alterStmt);
+
+                    alteration.setString(1, lastArgs.get(1));
+                    alteration.setString(2, lastArgs.get(2));
+                    alteration.setDate(3, java.sql.Date.valueOf(lastArgs.get(3)));
+                    alteration.setDate(4, java.sql.Date.valueOf(lastArgs.get(4)));
+                    alteration.setInt(5, Integer.valueOf(lastArgs.get(5)));
+                    alteration.setInt(6, Integer.valueOf(lastArgs.get(6)));
+                    alteration.setInt(7, Integer.valueOf(lastArgs.get(0)));
+
+                    alteration.executeUpdate();
+                }
+                catch (SQLException e) {
+                    ExceptionReporter rp = new ExceptionReporter(e);
+                    rp.report();
+                    System.exit(-1);
+                }
+                retString += "Your reservation has been altered.\n";
+            }
+            else {
+                retString += "You have cancelled your reservation request.\n";
+            }
         }
         else {
-            //For initial alteration request
+            try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                    System.getenv("APP_JDBC_USER"),
+                    System.getenv("APP_JDBC_PW")))
+            {
+                refRes = Reservation.fromDatabase(Integer.valueOf(argsList.get(0)), conn);
+                if (refRes == null) {
+                    retString += "No reservation with that code was found, please try again.\n";
+                    this.actionResult = Results.FAIL;
+                    return retString;
+                }
+
+                //Check empty values
+                if (argsList.get(1).isBlank())
+                    argsList.set(1, refRes.getFirstName());
+                if (argsList.get(2).isBlank())
+                    argsList.set(2, refRes.getLastName());
+                if (argsList.get(3).isBlank())
+                    argsList.set(3, dFormat.format(refRes.getCheckIn()));
+                else
+                    dateChange = true;
+                if (argsList.get(4).isBlank())
+                    argsList.set(4, dFormat.format(refRes.getCheckOut()));
+                else
+                    dateChange = true;
+                if (argsList.get(5).isBlank())
+                    argsList.set(5, String.valueOf(refRes.getKids()));
+                if (argsList.get(6).isBlank())
+                    argsList.set(6, String.valueOf(refRes.getAdults()));
+
+                PreparedStatement availRooms = conn.prepareStatement(availableRoomQuery);
+
+                availRooms.setDate(1, java.sql.Date.valueOf(argsList.get(3)));
+                availRooms.setDate(2, java.sql.Date.valueOf(argsList.get(4)));
+                availRooms.setDate(3, java.sql.Date.valueOf(argsList.get(3)));
+                availRooms.setDate(4, java.sql.Date.valueOf(argsList.get(4)));
+                availRooms.setString(5, refRes.getRoomCode());
+
+                ResultSet rooms = availRooms.executeQuery();
+
+                if (!rooms.next() && dateChange) {
+                    retString += "This alteration cannot be made as the room you have booked\n" +
+                            "is occupied on the new dates you've entered. Please try again\n" +
+                            "with new dates.\n";
+                    this.actionResult = Results.FAIL;
+                    return retString;
+                }
+
+                for (String arg : argsList)
+                    lastArgs.add(arg);
+                retString += "The alteration you'd like to make is valid.\n";
+                this.actionResult = Results.PROMPT_AGAIN;
+                return retString;
+            }
+            catch (SQLException e)
+            {
+                ExceptionReporter rp = new ExceptionReporter(e);
+
+                rp.report();
+                System.exit(-1);
+            }
         }
 
         //Default successful return

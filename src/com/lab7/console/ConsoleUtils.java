@@ -35,10 +35,37 @@ public class ConsoleUtils {
         return argsList;
     }
 
+    public static List<String> getAlterationInformation(List<String> argsList, Scanner instream) {
+        argsList.clear();
+
+        System.out.print("Enter the reservation code of the reservation you want to alter: ");
+        argsList.add(instream.nextLine());
+
+        System.out.println("Please enter the following information to complete\n" +
+                "your alteration request. If you have no change for an\n" +
+                "option, leave the entry blank and press enter:");
+
+        System.out.print("Enter the new first name: ");
+        argsList.add(instream.nextLine());
+        System.out.print("Enter the new last name: ");
+        argsList.add(instream.nextLine());
+        System.out.print("Enter the new check in date (YYYY-MM-DD): ");
+        argsList.add(instream.nextLine());
+        System.out.print("Enter the new check out date (YYYY-MM-DD): ");
+        argsList.add(instream.nextLine());
+        System.out.print("Enter the new number of children staying: ");
+        argsList.add(instream.nextLine());
+        System.out.print("Enter the new number of adults staying: ");
+        argsList.add(instream.nextLine());
+        System.out.println();
+
+        return argsList;
+    }
+
     public static List<String> confirmReservation(List<String> argsList, Scanner instream) {
         argsList.clear();
 
-        System.out.print("Enter \'y\' to confirm your reservation or \'n\' to cancel it: ");
+        System.out.print("Enter \'y\' to confirm your new reservation or \'n\' to cancel it: ");
         argsList.add(instream.nextLine());
         System.out.println();
 

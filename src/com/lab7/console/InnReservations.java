@@ -32,7 +32,7 @@ public class InnReservations
             if (userInput == 1) {
                 ConsoleUtils.getReservationInformation(argsList, instream);
             } else if (userInput == 2) {
-                //Prompt for reservation code and changes to make to fill argsList
+                ConsoleUtils.getAlterationInformation(argsList, instream);
             } else if (userInput == 3) {
                 //Prompt for reservation code
             } else if (userInput == 4) {
@@ -56,6 +56,9 @@ public class InnReservations
                     else if (outputString.charAt(0) == 'P' || outputString.charAt(0) == 'U') {
                         ConsoleUtils.getOptionChoice(argsList, instream);
                     }
+                }
+                else if (userInput == 2) {
+                    ConsoleUtils.confirmReservation(argsList, instream);
                 }
 
                 outputString = actHandler.handleAction(-1, argsList);

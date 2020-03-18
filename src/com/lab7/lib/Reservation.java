@@ -44,6 +44,10 @@ public class Reservation
         try (Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query))
         {
+            if (!rs.next()) {
+                return null;
+            }
+            rs.beforeFirst();
             rs.next();
 
             // TODO: Investigate a better solution
