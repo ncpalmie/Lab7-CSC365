@@ -26,6 +26,10 @@ public class ConsoleUtils {
         argsList.add(instream.nextLine());
         System.out.print("Enter the end date of the reservation (YYYY-MM-DD): ");
         argsList.add(instream.nextLine());
+        while (argsList.get(5).compareTo(argsList.get(4)) <= 0) {
+            System.out.print("End date must be after start date, try again: ");
+            argsList.set(5, instream.nextLine());
+        }
         System.out.print("Enter the number of children staying: ");
         argsList.add(instream.nextLine());
         System.out.print("Enter the number of adults staying: ");
@@ -53,6 +57,10 @@ public class ConsoleUtils {
         argsList.add(instream.nextLine());
         System.out.print("Enter the new check out date (YYYY-MM-DD): ");
         argsList.add(instream.nextLine());
+        while (argsList.get(3).compareTo(argsList.get(2)) <= 0) {
+            System.out.println("End date must be after start date, try again: ");
+            argsList.set(3, instream.nextLine());
+        }
         System.out.print("Enter the new number of children staying: ");
         argsList.add(instream.nextLine());
         System.out.print("Enter the new number of adults staying: ");
