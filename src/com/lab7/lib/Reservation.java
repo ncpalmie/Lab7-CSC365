@@ -1,7 +1,9 @@
 package com.lab7.lib;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.TimeZone;
 import java.math.BigDecimal;
 
@@ -39,8 +41,7 @@ public class Reservation
         {
             stmt.setInt(1, code);
             try (ResultSet rs = stmt.executeQuery())
-            {        
-                rs.next();
+            {
                 if (!rs.next()) {
                     return null;
                 }
@@ -76,6 +77,45 @@ public class Reservation
         }
 
         return newRes;
+    }
+
+    public static List<Reservation> perRoom(Room rm, Connection conn)
+    {
+        List<Reservation> res = new ArrayList<Reservation>();
+        String query = "SELECT CODE FROM lab7_reservations WHERE Room = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(query))
+        {
+            stmt.setString(1, rm.getCode());
+            try (ResultSet rs = stmt.executeQuery())
+            {
+                if (!rs.next()) {
+                    return null;
+                }
+                rs.beforeFirst();
+
+                while(rs.next())
+                {
+                    res.add(Reservation.fromDatabase(rs.getInt(1), conn));
+                }
+            }
+            catch (SQLException e)
+            {
+                ExceptionReporter rp = new ExceptionReporter(e);
+
+                rp.report();
+                System.exit(-1);
+            }
+        }
+        catch (SQLException e)
+        {
+            ExceptionReporter rp = new ExceptionReporter(e);
+
+            rp.report();
+            System.exit(-1);
+        }
+
+        return res;
     }
 
     public int getCode()            { return code; }
