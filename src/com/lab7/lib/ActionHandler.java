@@ -266,7 +266,7 @@ public class ActionHandler {
                 lastArgs.set(5, newVals.get((this.lastChoice - 1) * 3 + 2));
             }
 
-            newRes.setInt(1, Reservation.getUniqueCode());
+            newRes.setInt(1, Reservation.getUniqueCode(conn));
             newRes.setString(2, lastArgs.get(2)); //RoomCode
             newRes.setDate(3, java.sql.Date.valueOf(lastArgs.get(4))); //CheckIn
             newRes.setDate(4, java.sql.Date.valueOf(lastArgs.get(5))); //CheckOut
