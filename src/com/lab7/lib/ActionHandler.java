@@ -584,10 +584,14 @@ public class ActionHandler {
                 System.getenv("APP_JDBC_PW")))
             {
                 PreparedStatement delRes = conn.prepareStatement(deleteReservation);
-
-                delRes.setInt(1, java.lang.Integer.valueOf(argsList.get(0)));
-
-                delRes.executeUpdate();
+                if (argsList.get(0).charAt(0) == 'y') {
+                    delRes.setInt(1, java.lang.Integer.valueOf(prevVals.get(0)));
+                    delRes.executeUpdate();
+                    retString += "Cancellation confirmed. Your reservation has been removed\n";
+                }
+                else {
+                    retString += "Cancellation cancelled. Your reservation has not been removed\n";
+                }
             }
             catch (SQLException e)
             {
@@ -614,12 +618,13 @@ public class ActionHandler {
                     this.actionResult = Results.PROMPT_AGAIN;
     
                     retString = "This will permanently delete your reservation. Are you sure?";
+                    prevVals.add(argsList.get(0));
                 }
                 else
                 {
                     this.actionResult = Results.FAIL;
 
-                    retString = "No reservation was found with that code";
+                    retString = "\nNo reservation was found with that code.\n";
                 }
                 conn.rollback();
             }
