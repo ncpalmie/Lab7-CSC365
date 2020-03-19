@@ -1,6 +1,5 @@
 package com.lab7.console;
 
-import com.lab7.console.ConsoleUtils;
 import com.lab7.lib.ActionHandler;
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -38,7 +37,7 @@ public class InnReservations
             userInput = Integer.parseInt(userInputStr);
 
             System.out.println();
-
+            
             if (userInput == 1) {
                 ConsoleUtils.getReservationInformation(argsList, instream);
             } else if (userInput == 2) {
