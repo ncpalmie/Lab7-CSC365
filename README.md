@@ -8,7 +8,6 @@ Lab 7 for Migler's 365 Winter 2020
 
 ## Compilation Instructions
 ### Requirements
-- OpenJFX
 - JUnit
 - MySQL Connector/J
 
@@ -19,15 +18,8 @@ Lab 7 for Migler's 365 Winter 2020
 
 ```java com.lab7.console.InnReservations```
 
-### For GUI
-```javac --module-path %PATH_TO_FX% --add-modules javafx.controls,javafx.fxml -d bin/classes/ src/com/lab7/gui/*.java src/com/lab7/gui/controller/*.java src/com/lab7/lib/*.java```
-
-```java --module-path %PATH_TO_FX% --add-modules javafx.controls,javafx.fxml com.lab7.gui.InnReservations```
-
 ### Environment Variables
-```CLASSPATH```: ensure that bin/classes, src/com/lab7/gui, are here, as well as the directories of OpenJFX .jar files, the MySQL Connector/J .jar file, and the JUnit .jar file(s).
-
-```PATH_TO_FX```: path to your OpenJFX .jar files.
+```CLASSPATH```: ensure that bin/classes, src/com/lab7/gui, are here, as well as the directories of the MySQL Connector/J .jar file and the JUnit .jar file(s).
 
 ```APP_JDBC_URL```: URL to MySQL database.
 
