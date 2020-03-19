@@ -19,6 +19,8 @@ Lab 7 for Migler's 365 Winter 2020
 ```java com.lab7.console.InnReservations```
 
 ### Environment Variables
+```Database with lab7 specific tables setup: ncpalmie```
+
 ```CLASSPATH```: ensure that bin/classes, src/com/lab7/gui, are here, as well as the directories of the MySQL Connector/J .jar file and the JUnit .jar file(s).
 
 ```APP_JDBC_URL```: URL to MySQL database.
