@@ -57,9 +57,9 @@ public class ConsoleUtils {
         argsList.add(instream.nextLine());
         System.out.print("Enter the new check out date (YYYY-MM-DD): ");
         argsList.add(instream.nextLine());
-        while (argsList.get(3).compareTo(argsList.get(2)) <= 0) {
+        while (!argsList.get(3).isBlank() && argsList.get(4).compareTo(argsList.get(3)) <= 0) {
             System.out.println("End date must be after start date, try again: ");
-            argsList.set(3, instream.nextLine());
+            argsList.set(4, instream.nextLine());
         }
         System.out.print("Enter the new number of children staying: ");
         argsList.add(instream.nextLine());
