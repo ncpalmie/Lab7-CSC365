@@ -3,6 +3,7 @@ package com.lab7.console;
 import com.lab7.lib.ActionHandler;
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 public class InnReservations
 {
@@ -12,6 +13,7 @@ public class InnReservations
         String outputString;
         ArrayList<String> argsList = new ArrayList<String>();
         ActionHandler actHandler = new ActionHandler();
+        String userInputStr;
         Scanner instream = new Scanner(System.in);
 
         System.out.println("Welcome to the Lab7 Inn Reservation System");
@@ -25,7 +27,15 @@ public class InnReservations
             System.out.println("6: Exit reservation system");
             System.out.print("Enter the number of your desired action: ");
 
-            userInput = Integer.parseInt(instream.nextLine());
+            userInputStr = instream.nextLine();
+            while (!Pattern.matches("[0-9]+", userInputStr) || Integer.parseInt(userInputStr) > 6 ||
+                    Integer.parseInt(userInputStr) < 0) {
+                System.out.println("Not a valid input, please try again");
+                userInputStr = instream.nextLine();
+            }
+
+            userInput = Integer.parseInt(userInputStr);
+
             System.out.println();
             
             if (userInput == 1) {
