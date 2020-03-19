@@ -11,7 +11,7 @@ Lab 7 for Migler's 365 Winter 2020
 - JUnit
 - MySQL Connector/J
 
-### For Console
+### Command Line
 ```javac -d bin/classes src/com/lab7/console/*.java src/com/lab7/lib/*.java```
 
 ```cd bin/classes```
