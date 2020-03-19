@@ -658,7 +658,83 @@ public class ActionHandler {
 
     private String viewRevenue() {
         String retString = "";
+        List<String> roomCodes = new ArrayList<String>();
+        List<List<Integer>> roomTotals = new ArrayList<List<Integer>>();
+        List<Integer> yearTotals = new ArrayList<Integer>();
+        String allRoomsQuery = "SELECT RoomCode FROM lab7_rooms ORDER BY RoomCode ASC";
+        String oneRoomMonth = "SELECT Room, ROUND(SUM(Rate * DATEDIFF(CheckOut, CheckIn)),0) as Tot FROM lab7_reservations as l7re " +
+                "INNER JOIN lab7_rooms as l7ro ON l7re.room = l7ro.roomcode " +
+                "WHERE MONTH(CheckIn) = MONTH(CheckOut) AND MONTH(CheckOut) = ? AND Room = ? " +
+                "GROUP BY Room";
+        String oneRoomSplit = "SELECT roomCode, checkin, checkout, DATEDIFF(Checkout, checkin) as DaysTotal, " +
+                "DATEDIFF(LAST_DAY(Checkin), CheckIn) + 1 as DaysInFirst, ROUND(rate, 0) as rRate, MONTH(Checkin) as firstMonth, " +
+                "MONTH(CheckOut) as nextMonth FROM lab7_reservations as l7re INNER JOIN lab7_rooms as l7ro ON " +
+                "l7re.room = l7ro.roomcode " +
+                "WHERE MONTH(CheckIn) != MONTH(CheckOut) AND roomCode = ?";
 
+        try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                System.getenv("APP_JDBC_USER"),
+                System.getenv("APP_JDBC_PW")))
+        {
+            PreparedStatement stmt = conn.prepareStatement(allRoomsQuery);
+            ResultSet rsRooms = stmt.executeQuery();
+
+            while(rsRooms.next()) {
+                roomCodes.add(rsRooms.getString("roomCode"));
+                roomTotals.add(new ArrayList<Integer>());
+                yearTotals.add(0);
+            }
+
+            for (int i = 0; i < roomCodes.size(); i++) {
+                for (int j = 1; j <= 12; j++) {
+                    PreparedStatement rmMonth = conn.prepareStatement(oneRoomMonth);
+                    rmMonth.setInt(1, j);
+                    rmMonth.setString(2, roomCodes.get(i));
+                    ResultSet totals = rmMonth.executeQuery();
+                    totals.next();
+                    roomTotals.get(i).add(totals.getInt("Tot"));
+                }
+            }
+            for (int i = 0; i < roomCodes.size(); i++) {
+                PreparedStatement rmSplits = conn.prepareStatement(oneRoomSplit);
+                rmSplits.setString(1, roomCodes.get(i));
+                ResultSet splits = rmSplits.executeQuery();
+                while (splits.next()) {
+                    int daysInSecond = splits.getInt("DaysTotal") - splits.getInt("DaysInFirst");
+                    int firstCost = splits.getInt("rRate") * splits.getInt("DaysInFirst");
+                    int secondCost = splits.getInt("rRate") * daysInSecond;
+                    int firstMonth = splits.getInt("firstMonth");
+                    int secondMonth = splits.getInt("nextMonth");
+
+                    secondMonth--;
+                    firstMonth--;
+
+                    roomTotals.get(i).set(firstMonth, roomTotals.get(i).get(firstMonth) + firstCost);
+                    roomTotals.get(i).set(secondMonth, roomTotals.get(i).get(secondMonth) + secondCost);
+                }
+            }
+            for (int i = 0; i < roomCodes.size(); i++) {
+                for (Integer val : roomTotals.get(i)) {
+                    yearTotals.set(i, yearTotals.get(i) + val);
+                }
+            }
+
+            retString += "Here is a revenue report for all rooms in the inn. The CSV format is:\n";
+            retString += "Room Code: Jan Total, Feb Total, Mar Total, ... , Dec Total, Year Total\n\n";
+            for (int i = 0; i < roomCodes.size(); i++) {
+                retString += roomCodes.get(i) + ": ";
+                for (Integer val : roomTotals.get(i)) {
+                    retString += val + ", ";
+                }
+                retString += yearTotals.get(i) + "\n";
+            }
+
+        }
+        catch (SQLException e) {
+            ExceptionReporter rp = new ExceptionReporter(e);
+            rp.report();
+            System.exit(-1);
+        }
 
         //Default successful return
         this.actionResult = Results.SUCCESS;
